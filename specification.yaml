@@ -1,0 +1,53 @@
+name: my-group
+service_account_id: ajernahvptb8iv07i715
+ 
+instance_template:
+    platform_id: standard-v1
+    resources_spec:
+        memory: 2g
+        cores: 2
+    boot_disk_spec:
+        mode: READ_WRITE
+        disk_spec:
+            image_id: fd8fosbegvnhj5haiuoq 
+            type_id: network-hdd
+            size: 32g
+    network_interface_specs:
+        - network_id: enpkmno9s2tgtc2f4bhe
+          subnet_ids: 
+            - e9b773gr71f02t067003
+            - e2ldrv6617cnl4ue5m6v
+            - b0c1akjh9cakjg47j7bq
+          primary_v4_address_spec: { one_to_one_nat_spec: { ip_version: IPV4 }}
+    scheduling_policy:
+        preemptible: false
+    metadata:
+      user-data: |-
+        #cloud-config
+          users:
+            - name: my-user
+              groups: sudo
+              lock_passwd: true
+              sudo: 'ALL=(ALL) NOPASSWD:ALL'
+              ssh-authorized-keys:
+                - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDBKty3oBCSzW+ItHDsFeidBQHsVOBNcoUUKu2HSmAksvltxy7lwuwfZMQ8LcxhmVyG3oLIqnmS7Q8Z7CX78T6u4Ltwuqy7bZr7VnkNmAmOkmkGLPJyasyx0ej/krLQ0oBXz9iCZDDBD69UBsP70FpOFZ9Ub9bqCKYVaYdLAlKdWBHDseNk9K+wwOTN0PmhY/RMBGSTMCVlm3TgM+nqc8KxRdXgI7e9edQhzgAOzPKrYBcDruQP8ZS4niY3LPUGcxVSFMxsIEl3+3qh8YAMyG1o+kuQSlauLGD+FuZ+SkhDwr4YrMCu03hUfnb8U8PpNiDhSQrQvt2Gxp+XrpF2CYu6AxBeUNUP+TfT9u8r7UjEuQ6/1qf3/tRB8t2S/+JWzzTVSwD+i/35vc3y/uRxne5X4fLTpFh9WJf+sQlFm1j4LPN4DAK+tROnpRpZTCD6BpZrfVLtl06wHochVjQBwbZC2BbtbtxdEXQkQ9GDY2Uag3DkPyHV28A3xzARMfwCrvc= slovtsov@slovtsov
+          package_update: true
+          runcmd:
+            - [ apt-get, install, -y, nginx ]
+            - [/bin/bash, -c, 'source /etc/lsb-release; sed -i "s/Welcome to nginx/It is $(hostname) on $DISTRIB_DESCRIPTION/" /var/www/html/index.nginx-debian.html']
+ 
+deploy_policy:
+    max_unavailable: 1
+    max_expansion: 0
+scale_policy:
+    fixed_scale:
+        size: 3
+allocation_policy:
+    zones:
+        - zone_id: ru-central1-a
+        - zone_id: ru-central1-b
+        - zone_id: ru-central1-c
+ 
+load_balancer_spec:
+    target_group_spec:
+        name: my-target-group
